@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
+    'blog.apps.BlogConfig',
     'file_uploader',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'blog'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -121,3 +123,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# send email
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'congthanhbkit03@gmail.com'
+EMAIL_HOST_PASSWORD = 'phuongduongvien'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
