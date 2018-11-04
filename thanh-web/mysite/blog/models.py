@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from taggit.managers import TaggableManager
 
 # Create your models here.
 class PublishedManager(models.Manager):
@@ -19,6 +20,8 @@ class Post(models.Model):
 
 	title = models.CharField(max_length=250)
 	slug = models.SlugField(max_length=250, unique_for_date='publish')
+	#tags them vao dung thu vien taglib
+	tags = TaggableManager()
 	#name of the reverse relationship, from User to Post, is specified in related_name atribute
 	author = models.ForeignKey(User, related_name='blog_posts')
 	body = models.TextField()
