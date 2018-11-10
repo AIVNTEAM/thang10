@@ -1,0 +1,31 @@
+body{
+	color: blue;
+}
+
+.errorlist > li{
+	color: red;
+}
+#header{
+	background-color: #00dd00;
+	height: 50px;
+}
+.logo{
+	float: left;
+	width: 30%;
+}
+ul.menu{
+	float: left;
+	width: 40%;
+	list-style-type: none;
+}
+ul.menu > li {
+	display: inline;
+}
+.user{
+	float: right;
+	width: 20%;
+}
+#content{
+	clear: both;
+	border-bottom: 1px solid brown;
+}
