@@ -12,9 +12,11 @@ from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
 from django.db.models import Count
 from .models import Subject
 from students.forms import CourseEnrollForm
+from django.views.generic import TemplateView
 
-
-# Create your views here.
+# Sau khi dang nhap - dua vao role de chuyen huong
+class HomeView(TemplateView):
+	template_name = 'home/home.html'
 
 #mixins
 class OwnerMixin(object):

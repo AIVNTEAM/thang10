@@ -1,6 +1,10 @@
 from django.conf.urls import url
+from django.contrib.auth import views as auth_views
 from . import views
 urlpatterns = [
+    # url(r'^login/$', auth_views.login, 
+    	# {'template_name': 'students/student/login.html'}, name='login'),
+	# url(r'^logout/$', auth_views.logout, name='logout'),
 	url(r'^register/$',
 		views.StudentRegistrationView.as_view(),
 		name='student_registration'),

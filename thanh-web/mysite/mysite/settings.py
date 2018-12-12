@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'school',
     'polls.apps.PollsConfig',
     'blog.apps.BlogConfig',
     'file_uploader',

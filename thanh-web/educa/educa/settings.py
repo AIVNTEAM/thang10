@@ -131,7 +131,7 @@ STATIC_URL = '/static/'
 # This is the setting used by the auth module 
 # to redirect the user to after a successful
 # login, if no next parameter is present in the request.
-LOGIN_REDIRECT_URL = reverse_lazy('student_course_list')
+LOGIN_REDIRECT_URL = reverse_lazy('home')
 
 # MEDIA_URL is the base URL to serve uploaded media files 
 # MEDIA_ROOT is the local path where the files are located.

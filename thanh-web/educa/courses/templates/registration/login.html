@@ -10,6 +10,8 @@ p>
 <p>Please, use the following form to log-in:</p>
 {% endif %}
 <div class="login-form">
+<!-- ThanhBC: neu muon login xong chuyen den dau 
+	<form action="{% url 'login' %}?next=course/mine" method="post"> -->
 <form action="{% url 'login' %}" method="post">
 {{ form.as_p }}
 {% csrf_token %}

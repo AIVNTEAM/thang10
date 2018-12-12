@@ -28,7 +28,7 @@ urlpatterns = [
 	url(r'^accounts/logout/$', auth_views.logout, name='logout'),
     url(r'^admin/', admin.site.urls),
     url(r'^course/', include('courses.urls')),
-    url(r'^students/', include('students.urls')),
+    url(r'^student/', include('students.urls')),
 ]
 urlpatterns += static(settings.MEDIA_URL,
                         document_root=settings.MEDIA_ROOT)

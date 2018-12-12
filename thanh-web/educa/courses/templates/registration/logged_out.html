@@ -3,6 +3,10 @@
 {% block content %}
 <h1>Logged out</h1>
 <div class="module">
-<p>You have been successfully logged out. You can <a href="{% url 'login' %}">log-in again</a>.</p>
+<p>You have been successfully logged out. You can 
+	<!-- ThanhBC: Neu muon khi login se chuyen vao dau thi chinh sua gia tri cua tham so next 
+		<a href="{% url 'login' %}?next=/course/mine/">log-in again</a> -->.
+	<a href="{% url 'login' %}">log-in again</a>.
+</p>
 </div>
 {% endblock %}
