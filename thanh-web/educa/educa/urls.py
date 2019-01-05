@@ -16,19 +16,26 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from courses import views as courses_view
 from django.views.generic.base import TemplateView
-from courses.views import CourseListView
+from courses.views import CourseListView, SignUpView, StudentSignUpView, TeacherSignUpView
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     # url(r'^$', TemplateView.as_view(template_name='registration/home.html'), name='home'),
-	url(r'^$', CourseListView.as_view(), name='course_list'),
+	url(r'^$', courses_view.home, name='home'),    
+    url(r'^courselist$', CourseListView.as_view(), name='course_list'),
     url(r'^accounts/login/$', auth_views.login, name='login'),
 	url(r'^accounts/logout/$', auth_views.logout, name='logout'),
     url(r'^admin/', admin.site.urls),
     url(r'^course/', include('courses.urls')),
     url(r'^student/', include('students.urls')),
+    url(r'^signup/$', SignUpView.as_view(), name='signup'),
+    url(r'^signup/student/$',  
+        StudentSignUpView.as_view(), name='student_signup'),
+    url(r'^signup/teacher/$',  
+        TeacherSignUpView.as_view(), name='teacher_signup'),
 ]
 urlpatterns += static(settings.MEDIA_URL,
                         document_root=settings.MEDIA_ROOT)

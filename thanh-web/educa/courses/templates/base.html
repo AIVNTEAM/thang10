@@ -23,7 +23,7 @@
 			
 			<li><b>Xin chao`: {{request.user}}</b>&nbsp;&nbsp;<a href="{% url 'logout' %}">Sign out</a></li>
 			{% else %}
-			<li><a href="{% url 'student_registration' %}">Sign up</a></li>
+			<li><a href="{% url 'signup' %}">Sign up</a></li>
 			<li><a href="{% url 'login' %}">Sign in</a></li>
 			{% endif %}
 		</ul>

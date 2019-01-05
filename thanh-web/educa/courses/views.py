@@ -1,20 +1,29 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.base import TemplateResponseMixin, View
 from .models import Course, Module, Content
-from .forms import ModuleFormSet
+from .forms import ModuleFormSet, StudentSignupForm, TeacherSignupForm
 from django.forms.models import modelform_factory
 from django.apps import apps
 from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
 from django.db.models import Count
-from .models import Subject
+from .models import User, Subject, Teacher
 from students.forms import CourseEnrollForm
 from django.views.generic import TemplateView
+from django.contrib.auth import login, authenticate
 
 # Sau khi dang nhap - dua vao role de chuyen huong
+def home(request):	
+	if request.user.is_authenticated():
+		if request.user.is_teacher:
+			return redirect('manage_course_list')
+		else:
+			return redirect('student_course_list')
+	return render(request, 'home/home.html')
+
 class HomeView(TemplateView):
 	template_name = 'home/home.html'
 
@@ -23,13 +32,16 @@ class OwnerMixin(object):
 	def get_queryset(self):
 		qs = super(OwnerMixin, self).get_queryset()
 		#retrieve objects that belong to the current user
-		return qs.filter(owner = self.request.user)
+		# return qs.filter(owner = self.request.user)
+		#04/01/2019: CongThanh: get objects lien quan den giao vien tao
+		#teacher - user quan he 1 - 1
+		return qs.filter(owner = self.request.user.teacher)
 
 class OwnerEditMixin(object):
 	def form_valid(self, form):
 		#automatically set the current user in the 
 		#owner attribute of the object being saved
-		form.instance.owner = self.request.user
+		form.instance.owner = self.request.user.teacher
 		return super(OwnerEditMixin, self).form_valid(form)
 
 class OwnerCourseMixin(OwnerMixin):
@@ -84,7 +96,7 @@ class CourseModuleUpdateView(TemplateResponseMixin, View):
 	# từ người dùng và gọi đến các hàm xử lý tương ứng.
 	def dispatch(self, request, pk):
 		self.course = get_object_or_404(Course, 
-			id=pk, owner=request.user)
+			id=pk, owner=request.user.teacher)
 		return super(CourseModuleUpdateView, self).dispatch(request, pk)
 	#Executed for GET requests. We build an empty ModuleFormSet
 	#formset and render it to the template together with the current
@@ -134,7 +146,7 @@ class ContentCreateUpdateView(TemplateResponseMixin, View):
 	#corresponding module, model, and content object as class attributes:
 	def dispatch(self, request, module_id, model_name, id=None):
 		self.module = get_object_or_404(Module, id=module_id, 
-						course__owner=request.user)
+						course__owner=request.user.teacher)
 		self.model = self.get_model(model_name)
 		#id: The id of the object that is being updated. 
 		#It's None to create new objects.
@@ -153,7 +165,7 @@ class ContentCreateUpdateView(TemplateResponseMixin, View):
 							files=request.FILES)
 		if form.is_valid():
 			obj = form.save(commit=False)
-			obj.owner = request.user
+			obj.owner = request.user.teacher
 			obj.save()
 			if not id:
 				#new content
@@ -178,7 +190,7 @@ class ModuleContentListView(TemplateResponseMixin, View):
 
 	def get(self, request, module_id):
 		module = get_object_or_404(Module, id=module_id, 
-			course__owner=request.user)
+			course__owner=request.user.teacher)
 		return self.render_to_response({'module': module})
 
 #view cap nhat thu tu module dung AJAX
@@ -189,14 +201,14 @@ class ModuleContentListView(TemplateResponseMixin, View):
 class ModuleOrderView(CsrfExemptMixin, JsonRequestResponseMixin, View):
 	def post(self, request):
 		for id, order in self.request_json.items():
-			Module.objects.filter(id=id, course__owner=request.user).update(order=order)
+			Module.objects.filter(id=id, course__owner=request.user.teacher).update(order=order)
 		return self.render_json_response({'saved': 'OK'})
 
 #order content - tuong tu nhu tren
 class ContentOrderView(CsrfExemptMixin, JsonRequestResponseMixin, View):
 	def post(self, request):
 		for id, order in self.request_json.items():
-			Content.objects.filter(id=id, module__course__owner=request.user).update(order=order)
+			Content.objects.filter(id=id, module__course__owner=request.user.teacher).update(order=order)
 		return self.render_json_response({'saved': 'OK'})
 
 # Published
@@ -230,3 +242,52 @@ class CourseDetailView(DetailView):
 		context['enroll_form'] = CourseEnrollForm(
 			initial = {'course': self.object})
 		return context
+
+class SignUpView(TemplateView):
+	template_name = 'registration/signup.html'
+
+# Create your views here.
+class StudentSignUpView(CreateView):
+	model = User
+	form_class = StudentSignupForm
+	success_url = reverse_lazy('home')
+	template_name = 'registration/signup_form.html'
+
+	# du lieu co duoc truoc khi goi ra template them
+	# du lieu lien quan den user_type => student
+	def get_context_data(self, **kwargs):
+		context = super(StudentSignUpView, self).get_context_data(**kwargs)
+		context['user_type'] = 'student'
+		return context
+
+	def form_valid(self, form):
+		result = super(StudentSignUpView, self).form_valid(form)
+		cd = form.cleaned_data
+		#xac thuc truoc khi goi login
+		user = authenticate(username = cd['username'],
+			password = cd['password1'])
+		# user = form.save()
+		login(self.request, user)		
+		return result
+
+class TeacherSignUpView(CreateView):
+	model = User    #model tuong tac
+	form_class = TeacherSignupForm         #form su dung cho view
+	success_url = reverse_lazy('home')     #sau khi xu ly thanh cong
+	template_name = 'registration/signup_form.html'   #template su dung
+
+	def get_context_data(self, **kwargs):    #dua bien: user_type ra template
+		context = super(TeacherSignUpView, self).get_context_data(**kwargs)
+		context['user_type'] = 'teacher'
+		return context
+
+	def form_valid(self, form):
+		result = super(TeacherSignUpView, self).form_valid(form)
+		cd = form.cleaned_data
+		#xac thuc truoc khi goi login
+		user = authenticate(username = cd['username'],
+			password = cd['password1'])
+		# user = form.save()
+		login(self.request, user)		
+		return result
+	

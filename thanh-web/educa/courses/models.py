@@ -1,11 +1,29 @@
 from django.db import models
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 #su dung cho generic relation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from .fields import OrderField
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+
+#dinh nghi lop User voi 2 thuoc tinh mo rong
+#model cho phep 1 User co the dam nhan nhieu roles
+class User(AbstractUser):
+	is_student = models.BooleanField(default=False)
+	is_teacher = models.BooleanField(default=False)
+
+
+class Teacher(models.Model):
+	#quan he 1-1 voi User
+	user = models.OneToOneField(User, 
+		on_delete=models.CASCADE, 
+		primary_key=True, related_name='teacher')  #mac dinh thuoc tu User truy suat Teacher theo ten model la: teacher
+	#cac thuoc tinh them o day....
+	phone = models.CharField(max_length=15)
+	def __str__(self):
+		return self.user.username
 
 class Subject(models.Model):
 	title = models.CharField(max_length=200)
@@ -16,12 +34,12 @@ class Subject(models.Model):
 		return self.title
 
 class Course(models.Model):
-	owner = models.ForeignKey(User,
-		related_name='courses_created')
+	owner = models.ForeignKey(Teacher,
+		related_name='courses_created', null=True, default='-1')
 	subject = models.ForeignKey(Subject,
 		related_name='courses')
-	students = models.ManyToManyField(User, 
-		related_name='courses_joined', blank=True)
+	# students = models.ManyToManyField(Student, 
+	# 	related_name='courses_joined', blank=True)
 	title = models.CharField(max_length=200)
 	slug = models.SlugField(max_length=200, unique=True)
 	overview = models.TextField()
@@ -61,8 +79,8 @@ class Content(models.Model):
 		ordering = ['order']
 #model co so - va la model truu tuong
 class ItemBase(models.Model):
-	owner = models.ForeignKey(User,
-		related_name='%(class)s_related')
+	owner = models.ForeignKey(Teacher,
+		related_name='%(class)s_related', null=True, default='-1')
 	title = models.CharField(max_length=250)
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
@@ -89,3 +107,27 @@ class Image(ItemBase):
 	file = models.FileField(upload_to='images')
 class Video(ItemBase):
 	url = models.URLField()
+
+class Student(models.Model):
+	#quan he 1-1 voi User
+	user = models.OneToOneField(User, 
+		on_delete=models.CASCADE, 
+		primary_key=True, related_name='student')
+	#cac thuoc tinh them o day....
+	phone = models.CharField(max_length=15)
+	courses_joined = models.ManyToManyField(Course, 
+		through='Booking', related_name='students')
+	def __str__(self):
+		return self.user.username
+
+class Booking(models.Model):
+	course = models.ForeignKey(Course, 
+		on_delete=models.CASCADE, related_name='booking_courses')
+	student = models.ForeignKey(Student, 
+		on_delete=models.CASCADE, related_name='booking_courses')
+	user = models.ForeignKey(User, related_name='manages') #user quan ly booking
+	message = models.CharField(max_length=250)
+	status = models.BooleanField(default=0)
+	payment_status = models.BooleanField(default=0)
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)

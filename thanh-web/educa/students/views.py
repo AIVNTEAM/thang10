@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic.edit import CreateView
 from django.contrib.auth.forms import UserCreationForm
@@ -8,7 +8,7 @@ from braces.views import LoginRequiredMixin
 from .forms import CourseEnrollForm
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-from courses.models import Course
+from courses.models import User, Course, Booking
 
 # Create your views here.
 class StudentRegistrationView(CreateView):
@@ -33,9 +33,13 @@ class StudentEnrollView(LoginRequiredMixin, FormView):
 	form_class = CourseEnrollForm
 
 	def form_valid(self, form):
-		self.course = form.cleaned_data['course']
+		self.course = form.cleaned_data['course'] #lay course tu form
+		useradmin = get_object_or_404(User, pk=1) #mac dinh useradmin se quan ly tat ca nguoi dang ky moi
+		student = self.request.user.student
 		#add the current user to the students enrolled in the course.
-		self.course.students.add(self.request.user)
+		# self.course.students.add(self.request.user)
+		#them vao bookings table
+		Booking.objects.create(course=self.course, student=student, user=useradmin)
 		return super(StudentEnrollView, self).form_valid(form)
 
 	def get_success_url(self):
@@ -48,7 +52,7 @@ class StudentCourseListView(LoginRequiredMixin, ListView):
 
 	def get_queryset(self):
 		qs = super(StudentCourseListView, self).get_queryset()
-		return qs.filter(students__in=[self.request.user])
+		return qs.filter(students__in=[self.request.user.student])
 
 class StudentCourseDetailView(DetailView):
 	model = Course
@@ -56,7 +60,7 @@ class StudentCourseDetailView(DetailView):
 
 	def get_queryset(self):
 		qs = super(StudentCourseDetailView, self).get_queryset()
-		return qs.filter(students__in=[self.request.user])
+		return qs.filter(students__in=[self.request.user.student])
 
 	# override the get_context_data() method to set a course module 
 	# in the context if the module_id URL parameter is given. 

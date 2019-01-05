@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'students',
     'courses',
     'embed_video',
+    'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -137,3 +138,6 @@ LOGIN_REDIRECT_URL = reverse_lazy('home')
 # MEDIA_ROOT is the local path where the files are located.
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+#khi su dung ke thua AbtractUser can thiet lap thuoc tinh nay
+AUTH_USER_MODEL = "courses.User"
